@@ -7,6 +7,9 @@ from django.http import HttpResponse
 from rango.forms import PageForm
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.shortcuts import render
+from rango.models import Category
+from django.shortcuts import get_object_or_404
 
 def index(request):
     category_list = Category.objects.order_by('-likes')[:5]
@@ -17,8 +20,6 @@ def index(request):
 
     return render(request, 'rango/index.html', context=context_dict)
 
-def about(request):
-    return HttpResponse('Rango says here is the about page.')
 
 def show_category(request, category_name_slug):
     context_dict = {}
@@ -78,3 +79,20 @@ def add_page(request, category_name_slug):
 
     context_dict = {'form': form, 'category': category}
     return render(request, 'rango/add_page.html', context=context_dict)
+
+def about(request):
+    print(request.method)
+    print(request.user)
+    return render(request, 'rango/about.html', {})
+
+def categories(request):
+    categories = Category.objects.all()
+    current_category = None  # Default value
+
+    if 'category_name_slug' in request.GET:
+        try:
+            current_category = Category.objects.get(slug=request.GET['category_name_slug'])
+        except Category.DoesNotExist:
+            current_category = None
+
+    return render(request, 'rango/categories.html', {'categories': categories, 'current_category': current_category})
